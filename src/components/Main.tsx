@@ -67,25 +67,44 @@ export const Main: VFC = () => {
   const [img, setImg] = useState<any>();
   const [idx, setIdx] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [noise, setNoise] = useState<number[][] | null>(null);
 
-  const generate = () => {
+  const generate = (cs: boolean) => {
     setLoading(true);
-    axios
-      .post("https://mangagen-backend.herokuapp.com/generate", {
-        pts: pts,
-      })
-      .then((res) => {
-        setImg(res.data);
-      })
-      .catch(() => {
-        alert("取得に失敗しました");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    if (cs)
+      axios
+        .post("https://mangagen-backend.herokuapp.com/generate", {
+          pts: pts,
+        })
+        .then((res) => {
+          setImg(res.data.img);
+          setNoise(res.data.z);
+        })
+        .catch(() => {
+          alert("取得に失敗しました");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    else
+      axios
+        .post("https://mangagen-backend.herokuapp.com/generate", {
+          pts: pts,
+          z: noise,
+        })
+        .then((res) => {
+          setImg(res.data.img);
+          setNoise(res.data.z);
+        })
+        .catch(() => {
+          alert("取得に失敗しました");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
   };
   useEffect(() => {
-    generate();
+    generate(true);
   }, []);
   const box = (index: number, flag: boolean) => {
     const r = 255 - ((index * 50) % 255);
@@ -124,10 +143,17 @@ export const Main: VFC = () => {
       </HStack>
       <Button
         onClick={() => {
-          generate();
+          generate(false);
         }}
       >
-        ランダム生成
+        生成
+      </Button>
+      <Button
+        onClick={() => {
+          generate(true);
+        }}
+      >
+        スタイル変更
       </Button>
     </VStack>
   );
